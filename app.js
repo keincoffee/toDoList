@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
+const date = require(__dirname + '/date.js');
 
 const app = express();
 
-let items = ["Brush teeth", "Make breakfast"];
+const items = ["Brush teeth", "Make breakfast"];
+const workItems =[];
 
 app.set('view engine', 'ejs');
 
@@ -14,26 +16,36 @@ app.use(express.static("public"));
 
 app.get("/", function(req, res) {
 
-  let today = new Date();
+  const day = date.getDate();
 
-  let options = {
-    weekday: "long",
-    day: "numeric",
-    month: "long"
-  };
-
-  let day = today.toLocaleDateString("en-US", options);
-
-  res.render('lists', {kindOfDay: day, newListItems: items});
+  res.render('lists', {listTitle: day, newListItems: items});
 
 });
 
+app.get("/work", function(req, res) {
+  res.render("lists", {listTitle: "Work List", newListItems: workItems});
+});
+
+app.get("/about", function(req, res) {
+  res.render("about");
+});
+
+app.post("/work", function(req, res){
+  const item = req.body.newItem;
+  workItems.push(item);
+})
+
 app.post("/", function(req, res){
-  let item = req.body.newItem;
+  const item = req.body.newItem;
 
-  items.push(item);
+  if (req.body.list === "Work") {
+    workItems.push(item);
+    res.redirect("/work")
+  }else {
+    items.push(item);
+    res.redirect("/");
+  }
 
-  res.redirect("/");
 });
 
 
